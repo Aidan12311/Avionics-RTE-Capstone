@@ -1,7 +1,10 @@
 CXX     = arm-none-eabi-g++
 CPU     = -mcpu=cortex-m4 -mthumb -mfpu=fpv4-sp-d16 -mfloat-abi=hard
+
 CXXFLAGS = $(CPU) -std=c++17 -O0 -g3 -ffreestanding -nostdlib \
-            -fno-exceptions -fno-rtti
+            -fno-exceptions -fno-rtti \
+			-I.
+
 LDFLAGS  = $(CPU) -nostdlib -T linker.ld -lgcc
 
 SRCS = main.cpp src/startup/startup.cpp

@@ -1,7 +1,9 @@
-mach create
+mach create "stm32f429-disco"
 machine LoadPlatformDescription @platforms/boards/stm32f4_discovery-kit.repl
 
 sysbus LoadELF @bin/firmware.elf
+
+showAnalyzer sysbus.usart2
 
 machine StartGdbServer 3333
 
