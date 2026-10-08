@@ -1,5 +1,5 @@
 # Preface
-**HEAVY WIP**
+**HEAVY WIP!!!**
 
 This document is **NOT** a project reference. This is a simple collection of notes that **I** think are useful for understanding the underlying structures that make this project what it is. The reason I emphasize that **I** think these are useful is because I might omit some information that I take for granted. This means it might omit critical information the reader could reasonably not know.
 
