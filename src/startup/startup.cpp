@@ -19,7 +19,7 @@ extern uint32_t _init_array_end;
 // NOTE: Empty handler for all unhandled interrupts
 extern "C" void default_handler(void) { while(1); }
 
-// Placeholder weak handlers for specific interrupts until we actually fill them in
+// NOTE: Placeholder weak handlers for specific interrupts until we actually fill them in
 extern "C" __attribute__((weak)) void systick_handler(void)    { while(1); }
 extern "C" __attribute__((weak)) void pendsv_handler(void)     { while(1); }
 extern "C" __attribute__((weak)) void spi1_irq_handler(void)   { while(1); }
