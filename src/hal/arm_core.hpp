@@ -1,5 +1,5 @@
-#ifndef ARM_CORE_HPP
-#define ARM_CORE_HPP
+#ifndef AVIONICS_RTE_ARM_CORE_HPP
+#define AVIONICS_RTE_ARM_CORE_HPP
 
 namespace arm {
     inline void dsb() { __asm__ volatile("dsb" ::: "memory"); }
@@ -11,4 +11,4 @@ namespace arm {
     inline void nop() { __asm__ volatile("nop"); }
 } // namespace arm
 
-#endif // ARM_CORE_HPP
+#endif // AVIONICS_RTE_ARM_CORE_HPP

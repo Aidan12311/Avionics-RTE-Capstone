@@ -23,6 +23,7 @@ extern "C" void default_handler(void) { while(1); }
 extern "C" __attribute__((weak)) void systick_handler(void)    { while(1); }
 extern "C" __attribute__((weak)) void pendsv_handler(void)     { while(1); }
 extern "C" __attribute__((weak)) void spi1_irq_handler(void)   { while(1); }
+extern "C" __attribute__((weak)) void usart1_irq_handler(void) { while(1); }
 extern "C" __attribute__((weak)) void usart2_irq_handler(void) { while(1); }
 
 __attribute__((section(".isr_vector"), used))
@@ -83,7 +84,7 @@ const uint32_t vector_table[] = {
     (uint32_t)&default_handler,       // [50] IRQ34 I2C2_ER
     (uint32_t)&spi1_irq_handler,       // [51] IRQ35 SPI1  — IMU
     (uint32_t)&default_handler,       // [52] IRQ36 SPI2
-    (uint32_t)&default_handler,       // [53] IRQ37 USART1
+    (uint32_t)&usart1_irq_handler,     // [53] IRQ37 USART1
     (uint32_t)&usart2_irq_handler,     // [54] IRQ38 USART2 — telemetry
     (uint32_t)&default_handler,       // [55] IRQ39 USART3
     (uint32_t)&default_handler,       // [56] IRQ40 EXTI15_10
@@ -154,7 +155,7 @@ static void copy_data_section() {
     uint32_t *dst = &_sdata;
     uint32_t *end = &_edata;
 
-    while (dst < end) {
+    while(dst < end) {
         *dst++ = *src++;
     }
 }
@@ -174,7 +175,7 @@ static void call_ctors() {
     ctor_fn *start = reinterpret_cast<ctor_fn*>(&_init_array_start);
     ctor_fn *end = reinterpret_cast<ctor_fn*>(&_init_array_end);
 
-    while (start < end) {
+    while(start < end) {
         (*start++)();
     }
 }

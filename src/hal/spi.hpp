@@ -1,0 +1,6 @@
+#ifndef AVIONICS_RTE_SPI_HPP
+#define AVIONICS_RTE_SPI_HPP
+
+
+
+#endif // AVIONICS_RTE_SPI_HPP
