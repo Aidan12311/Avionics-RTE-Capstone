@@ -6,7 +6,7 @@
 namespace uart {
     void init();
 
-    void put_next_line();
+    void put_new_line();
 
     void print(const char *str);
     void println(const char *str);

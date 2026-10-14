@@ -9,7 +9,9 @@ LDFLAGS  = $(CPU) -nostdlib -T linker.ld -lgcc
 
 SRCS = main.cpp \
        src/startup/startup.cpp \
-       src/hal/uart.cpp
+       src/hal/uart.cpp \
+       src/hal/gpio.cpp \
+       src/hal/spi.cpp \
 
 BIN_DIR = bin
 TARGET  = $(BIN_DIR)/firmware.elf

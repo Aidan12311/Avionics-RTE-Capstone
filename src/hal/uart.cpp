@@ -1,6 +1,7 @@
 #include <cstdint>
 
 #include "src/hal/uart.hpp"
+#include "src/hal/pins.hpp"
 #include "src/hal/arm_core.hpp"
 #include "src/hal/ring_buffer.hpp"
 
@@ -36,10 +37,7 @@ namespace {
     // IRQ37: bit 37 - 32 = bit 5 of ISER1
     constexpr uint32_t NVIC_ISER1 = 0xE000E104u;
 
-    volatile uint32_t& reg(uint32_t addr) {
-        return *reinterpret_cast<volatile uint32_t*>(addr);
-    }
-
+    // TX ring buffer
     RingBuffer<uint8_t, 256> tx_buffer;
 } // anonymous namespace
 
@@ -48,16 +46,8 @@ void uart::init() {
     reg(RCC_AHB1ENR) |= GPIOAEN;
     reg(RCC_APB2ENR) |= USART1EN;
 
-    // PA9 → alternate function mode
-    // MODER is 2 bits per pin: bits [19:18] for pin 9
-    reg(GPIOA_MODER) &= ~(3u << (9u * 2u));
-    reg(GPIOA_MODER) |=  (2u << (9u * 2u));
-
-    // PA9 → AF7 (USART1_TX)
-    // AFRH covers pins 8–15, 4 bits each
-    // Pin 9 offset = (9 - 8) * 4 = 4
-    reg(GPIOA_AFRH) &= ~(0xFu << 4u);
-    reg(GPIOA_AFRH) |=  (7u   << 4u);
+    // GPIO pin configuration for USART1_TX (PA9)
+    pins::UART1_TX.configure_af(7u); 
 
     // Set baud rate and enable UART with TX only
     reg(USART1_BRR) = BRR_115200;
@@ -67,7 +57,7 @@ void uart::init() {
     reg(NVIC_ISER1) |= (1u << 5);
 }
 
-void uart::put_next_line(void) {
+void uart::put_new_line(void) {
     uart::put_char('\n');
     uart::put_char('\r');
 }
@@ -97,7 +87,7 @@ void uart::put_hex(uint8_t value) {
     uart::put_char(hex_str[value >> 4 & 0xFu]);
     uart::put_char(hex_str[value & 0xFu]);
 
-    uart::put_next_line();
+    uart::put_new_line();
 }
 
 void uart::put_u32(uint32_t value) {
@@ -118,7 +108,7 @@ void uart::put_u32(uint32_t value) {
         put_char(digits[i - 1]);
     }
 
-    uart::put_next_line();
+    uart::put_new_line();
 }
 
 void uart::isr_tx_handler() {
