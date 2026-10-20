@@ -12,6 +12,9 @@ SRCS = main.cpp \
        src/hal/uart.cpp \
        src/hal/gpio.cpp \
        src/hal/spi.cpp \
+       src/rte_core/scheduler.cpp \
+       src/rte_core/task.cpp \
+       src/rte_core/isr_handlers.cpp
 
 BIN_DIR = bin
 TARGET  = $(BIN_DIR)/firmware.elf
