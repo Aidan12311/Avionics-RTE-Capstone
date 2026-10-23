@@ -63,7 +63,7 @@ void uart::put_new_line(void) {
 }
 
 void uart::put_char(char c) {
-    uint32_t unsigned_value = static_cast<uint8_t>(c);
+    uint8_t unsigned_value = static_cast<uint8_t>(c);
     while(!tx_buffer.write(unsigned_value));
 
     reg(USART1_CR1) |= CR1_TXEIE;
@@ -84,10 +84,8 @@ void uart::println(const char *str) {
 
 void uart::put_hex(uint8_t value) {
     constexpr const char *hex_str = "0123456789ABCDEF";
-    uart::put_char(hex_str[value >> 4 & 0xFu]);
+    uart::put_char(hex_str[(value >> 4) & 0xFu]);
     uart::put_char(hex_str[value & 0xFu]);
-
-    uart::put_new_line();
 }
 
 void uart::put_u32(uint32_t value) {
@@ -100,15 +98,13 @@ void uart::put_u32(uint32_t value) {
     uint8_t digit_count = 0;
 
     while(value > 0) {
-        digits[digit_count++] = '0' + (value % 10);
+        digits[digit_count++] = static_cast<char>('0' + (value % 10));
         value /= 10;
     }
 
     for(uint8_t i = digit_count; i > 0; --i) {
         put_char(digits[i - 1]);
     }
-
-    uart::put_new_line();
 }
 
 void uart::isr_tx_handler() {

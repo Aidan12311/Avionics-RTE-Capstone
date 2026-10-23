@@ -30,7 +30,8 @@ namespace rte {
         *--stack_frame_ptr = 0x00000000u; // R3
         *--stack_frame_ptr = 0x00000000u; // R2
         *--stack_frame_ptr = 0x00000000u; // R1
-        *--stack_frame_ptr = 0x00000000u; // R
+        *--stack_frame_ptr = 0x00000000u; // R0
+
         *--stack_frame_ptr = 0x00000000u; // R11
         *--stack_frame_ptr = 0x00000000u; // R10
         *--stack_frame_ptr = 0x00000000u; // R9

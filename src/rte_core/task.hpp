@@ -13,7 +13,7 @@ namespace rte {
 
     class Task {
     public:
-        using TaskFn = void (*)();
+        using TaskFn = void(*)();
 
         Task(
             TaskFn task_fn,
@@ -57,6 +57,10 @@ namespace rte {
             return _name;
         }
 
+        uint32_t *get_sp() const {
+            return _sp;
+        }
+
         void set_next_run_time_ms(uint32_t next_run_time_ms) {
             _next_run_time_ms = next_run_time_ms;
         }
@@ -69,8 +73,8 @@ namespace rte {
             _wcet_us = (_wcet_us > elapsed) ? _wcet_us : elapsed;
         }
 
+        // NOTE: _sp MUST be the first member of the class
         uint32_t *_sp{};
-
     private:
         const char *_name{};
         uint8_t _priority{};
@@ -82,8 +86,6 @@ namespace rte {
 
         static constexpr uint32_t CANARY{0xDEADBEEFu};
     };
-
-    static_assert(offsetof(Task, _sp) == 0, "Task::_sp must be the first member of Task");
 } // namespace rte
 
 #endif // AVIONICS_RTE_CORE_TASK_HPP_

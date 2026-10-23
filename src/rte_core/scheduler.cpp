@@ -58,7 +58,6 @@ namespace {
         
         for(uint8_t i = 0u; i < task_count; ++i) {
             Task *curr_task = tasks[i];
-
             if(curr_task->is_ready()) {
                 if(!next_task_candidate || curr_task->get_priority() > next_task_candidate->get_priority()) {
                     next_task_candidate = curr_task;
@@ -87,6 +86,12 @@ void scheduler::task_block_until_next_period() {
         current_task->get_next_run_time_ms() + current_task->get_period_ms()
     );
 
+    Task *next_task_candidate = get_next_task();
+    if(next_task_candidate && next_task_candidate != current_task) {
+        next_task_candidate->set_state(rte::TaskState::Running);
+        next_task = next_task_candidate;
+    }
+
     reg(SCB_ICSR) |= PENDSVSET;
 
     arm::enable_irq();
@@ -94,7 +99,6 @@ void scheduler::task_block_until_next_period() {
 
 void scheduler::start() {
     reg(NVIC_SHPR3) |= (0xFFU << 16);
-
     reg(SYST_RVR) = SYSTICK_RELOAD;
     reg(SYST_CVR) = 0u;
     reg(SYST_CSR) = SYST_CLKSOURCE | SYST_TICKINT | SYST_ENABLE;
@@ -106,37 +110,32 @@ void scheduler::start() {
     }
 
     first_task->set_state(rte::TaskState::Running);
-    current_task = first_task;
+    current_task = nullptr;
     next_task = first_task;
 
-    __asm__ volatile(
-        // Load first task's sp_ (offset 0 in TCB) into PSP
-        "ldr r0, %[task]        \n"  // r0 = pointer to first task TCB
-        "ldr r0, [r0, #0]       \n"  // r0 = task->sp_ (offset 0)
-        "msr psp, r0            \n"  // PSP = task->sp_
 
-        // Switch Thread mode to use PSP
-        // CONTROL register bit 1: 0=MSP, 1=PSP
-        "mrs r0, control        \n"
-        "orr r0, r0, #2         \n"  // set SPSEL bit
-        "msr control, r0        \n"
-        "isb                    \n"  // flush pipeline after CONTROL write
+    __asm__ volatile (
+        // Set PSP to any valid stack location (we use MSP value for now)
+        // The actual PSP will be set by pendsv_handler from next_task->_sp
+        "mrs r0, msp        \n"
+        "msr psp, r0        \n"
 
-        // Pend PendSV — will fire immediately when we enable interrupts
-        "ldr r0, =%[icsr]       \n"
-        "ldr r1, =%[psvset]     \n"
-        "str r1, [r0]           \n"
+        // Switch Thread mode to PSP
+        "mrs r0, control    \n"
+        "orr r0, r0, #2     \n"
+        "msr control, r0    \n"
+        "isb                \n"
 
-        // Enable interrupts — PendSV fires, switcher runs, first task starts
-        "cpsie i                \n"
-
-        // We never reach here — PendSV takes over
-        "b .                    \n"
+        // Pend PendSV and enable interrupts
+        "ldr r0, =%[icsr]   \n"
+        "ldr r1, =%[psvset] \n"
+        "str r1, [r0]       \n"
+        "cpsie i            \n"
+        "b .                \n"
 
         :
-        : [task]   "m" (current_task),
-        [icsr]   "i" (SCB_ICSR),
-        [psvset] "i" (PENDSVSET)
+        : [icsr]   "i" (SCB_ICSR),
+          [psvset] "i" (PENDSVSET)
         : "r0", "r1"
     );
 
@@ -172,4 +171,3 @@ void scheduler::tick() {
 uint32_t scheduler::now() {
     return systick_count;
 }
-
