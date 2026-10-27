@@ -14,6 +14,7 @@ namespace uart {
     void put_char(char c);
     void put_hex(uint8_t value);
     void put_u32(uint32_t value);
+    void put_float(float value);
 
     void isr_tx_handler();
 } // namespace uart

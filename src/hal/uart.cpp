@@ -107,6 +107,29 @@ void uart::put_u32(uint32_t value) {
     }
 }
 
+void uart::put_float(float value) {
+    if(value < 0.0f) {
+        put_char('-');
+        value = -value;
+    }
+
+    uint32_t integer_part = static_cast<uint32_t>(value);
+    uint32_t decimal_part = static_cast<uint32_t>((value - static_cast<float>(integer_part)) * 1000.0f);
+
+    put_u32(integer_part);
+    put_char('.');
+
+    if(decimal_part < 100u) {
+        put_char('0');
+    }
+
+    if(decimal_part < 10u) {
+        put_char('0');
+    }
+
+    put_u32(decimal_part);
+}
+
 void uart::isr_tx_handler() {
     uint8_t byte{};
 

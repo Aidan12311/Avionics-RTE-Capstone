@@ -14,7 +14,8 @@ SRCS_CXX = main.cpp \
            src/hal/spi.cpp \
            src/rte_core/task.cpp \
            src/rte_core/scheduler.cpp \
-           src/rte_core/isr_handlers.cpp
+           src/rte_core/isr_handlers.cpp \
+           src/drivers/icm42688.cpp
 
 SRCS_ASM = src/rte_core/context_switch.s
 
