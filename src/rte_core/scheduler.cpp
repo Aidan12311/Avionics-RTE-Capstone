@@ -79,7 +79,7 @@ void scheduler::add_task(Task *task) {
 }
 
 void scheduler::task_block_until_next_period() {
-    arm::disable_irq();
+    arm::IrqLock irq_lock{};
 
     current_task->set_state(rte::TaskState::Blocked);
     current_task->set_next_run_time_ms(
@@ -93,12 +93,11 @@ void scheduler::task_block_until_next_period() {
     }
 
     reg(SCB_ICSR) |= PENDSVSET;
-
-    arm::enable_irq();
 }
 
 void scheduler::start() {
-    reg(NVIC_SHPR3) |= (0xFFU << 16);
+    reg(NVIC_SHPR3) |= (0xFFu << 24) | (0xFFu << 16);
+
     reg(SYST_RVR) = SYSTICK_RELOAD;
     reg(SYST_CVR) = 0u;
     reg(SYST_CSR) = SYST_CLKSOURCE | SYST_TICKINT | SYST_ENABLE;
@@ -112,7 +111,6 @@ void scheduler::start() {
     first_task->set_state(rte::TaskState::Running);
     current_task = nullptr;
     next_task = first_task;
-
 
     __asm__ volatile (
         // Set PSP to any valid stack location (we use MSP value for now)

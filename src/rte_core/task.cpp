@@ -1,5 +1,14 @@
 #include "src/rte_core/task.hpp"
 
+namespace {
+    constexpr uint32_t EXC_RETURN_THREAD_PSP = 0xFFFFFFFDu; 
+    constexpr uint32_t XPSR_THUMB_BIT        = 0x01000000u;
+
+    void trap() {
+        while(true);
+    }
+} // anonymous namespace
+
 namespace rte {
     Task::Task(
         TaskFn task_fn,
@@ -14,33 +23,35 @@ namespace rte {
         _priority(priority),
         _period_ms(period_ms),
         _next_run_time_ms(0u),
-        _wcet_us(0u),
         _state(TaskState::Ready),
         _stack_base(stack) 
     {
         _stack_base[0] = CANARY;
 
-        uint32_t stack_top_idx = stack_size_bytes / sizeof(uint32_t);
-        uint32_t *stack_frame_ptr = stack + stack_top_idx;
+        const uint32_t top_addr = (reinterpret_cast<uint32_t>(stack) + stack_size_bytes) & ~7u;
+        uint32_t *frame = reinterpret_cast<uint32_t*>(top_addr);
 
-        *--stack_frame_ptr = 0x01000000u; // xPSR
-        *--stack_frame_ptr = reinterpret_cast<uint32_t>(task_fn); // PC
-        *--stack_frame_ptr = 0xFFFFFFFDu; // LR
-        *--stack_frame_ptr = 0x00000000u; // R12
-        *--stack_frame_ptr = 0x00000000u; // R3
-        *--stack_frame_ptr = 0x00000000u; // R2
-        *--stack_frame_ptr = 0x00000000u; // R1
-        *--stack_frame_ptr = 0x00000000u; // R0
+        // Hardware-restored frame (popped by the CPU on exception return)
+        *--frame = XPSR_THUMB_BIT;                                  // xPSR
+        *--frame = reinterpret_cast<uint32_t>(task_fn);             // PC
+        *--frame = reinterpret_cast<uint32_t>(trap);                // LR (the task's own LR)
+        *--frame = 0u;                                              // R12
+        *--frame = 0u;                                              // R3
+        *--frame = 0u;                                              // R2
+        *--frame = 0u;                                              // R1
+        *--frame = 0u;                                              // R0
 
-        *--stack_frame_ptr = 0x00000000u; // R11
-        *--stack_frame_ptr = 0x00000000u; // R10
-        *--stack_frame_ptr = 0x00000000u; // R9
-        *--stack_frame_ptr = 0x00000000u; // R8
-        *--stack_frame_ptr = 0x00000000u; // R7
-        *--stack_frame_ptr = 0x00000000u; // R6
-        *--stack_frame_ptr = 0x00000000u; // R5
-        *--stack_frame_ptr = 0x00000000u; // R4
+        // Software-restored by PendSV: EXC_RETURN sits just above R11
+        *--frame = EXC_RETURN_THREAD_PSP;                           // saved LR / EXC_RETURN
+        *--frame = 0u;                                              // R11
+        *--frame = 0u;                                              // R10
+        *--frame = 0u;                                              // R9
+        *--frame = 0u;                                              // R8
+        *--frame = 0u;                                              // R7
+        *--frame = 0u;                                              // R6
+        *--frame = 0u;                                              // R5
+        *--frame = 0u;                                              // R4
 
-        _sp = stack_frame_ptr;
+        _sp = frame;
     }
 }

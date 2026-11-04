@@ -69,10 +69,6 @@ namespace rte {
             _state = state;
         }
 
-        void update_wcet(uint32_t elapsed) {
-            _wcet_us = (_wcet_us > elapsed) ? _wcet_us : elapsed;
-        }
-
         // NOTE: _sp MUST be the first member of the class
         uint32_t *_sp{};
     private:

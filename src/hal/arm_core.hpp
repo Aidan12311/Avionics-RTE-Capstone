@@ -7,10 +7,24 @@ namespace arm {
     inline void dsb() { __asm__ volatile("dsb" ::: "memory"); }
     inline void isb() { __asm__ volatile("isb" ::: "memory"); }
 
-    inline void enable_irq() { __asm__ volatile("cpsie i" ::: "memory"); }
-    inline void disable_irq() { __asm__ volatile("cpsid i" ::: "memory"); }
-
     inline void nop() { __asm__ volatile("nop"); }
+
+    class IrqLock {
+    public:
+        IrqLock() {
+            __asm__ volatile("mrs %[s], primask" : [s] "=r" (_saved_state));
+            __asm__ volatile("cpsid i" ::: "memory");
+        }
+        ~IrqLock() {
+            __asm__ volatile("msr primask, %[s]" : : [s] "r" (_saved_state) : "memory");
+        }
+
+        IrqLock(const IrqLock&) = delete;
+        IrqLock& operator=(const IrqLock&) = delete;
+
+    private:
+        uint32_t _saved_state{};
+    };
 } // namespace arm
 
 template<typename T=uint32_t>
