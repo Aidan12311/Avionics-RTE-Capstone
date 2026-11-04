@@ -133,8 +133,8 @@ void uart::put_float(float value) {
 void uart::isr_tx_handler() {
     uint8_t byte{};
 
-    if(tx_buffer.read(byte)) {
-        reg(USART1_DR) = byte;
+    if(const auto byte = tx_buffer.read()) {
+        reg(USART1_DR) = *byte;
     }
     else {
         reg(USART1_CR1) &= ~CR1_TXEIE;

@@ -2,6 +2,7 @@
 #define AVIONICS_RTE_RING_BUFFER_HPP
 
 #include <cstdint>
+#include <optional>
 
 template<typename T, uint32_t N>
 class RingBuffer {
@@ -21,15 +22,15 @@ public:
         return true;
     }
 
-    bool read(T& data) {
+    std::optional<T> read() {
         if(_tail == _head) {
-            return false;
+            return std::nullopt;
         }
 
         data = _buffer[_tail];
         _tail = (_tail + 1) & BUFFER_MASK;
 
-        return true;
+        return data;
     }
 
     bool is_empty() const { return _head == _tail;}

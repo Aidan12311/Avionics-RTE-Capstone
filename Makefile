@@ -32,6 +32,8 @@ OBJS     = $(OBJS_CXX) $(OBJS_ASM)
 
 all: $(TARGET)
 
+$(BIN_DIR)/src/hal/uart.o: CXXFLAGS += -Og
+
 $(BIN_DIR)/%.o: %.cpp
 	mkdir -p $(dir $@)
 	$(CXX) $(CXXFLAGS) -c $< -o $@
