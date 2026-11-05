@@ -2,7 +2,7 @@
 
 A from-scratch real-time executive for an ARM Cortex-M4F that reads a live IMU, estimates the board's attitude, and streams it to a flight simulator, so tilting the board in your hand flies a simulated aircraft.
 
-Written bare-metal in C++17 and Thumb-2 assembly on an STM32F429I-DISC1, with no vendor HAL, no CMSIS, no libc, no heap and no off-the-shelf RTOS. The whole firmware is under 10 KB of flash.
+Written bare-metal in C++17 and Thumb-2 assembly on an STM32F429I-DISC1, with no vendor HAL, no CMSIS, no heap and no off-the-shelf RTOS. The whole firmware is under 10 KB of flash.
 
 ## How it works
 
