@@ -24,11 +24,11 @@ namespace {
         const bool  swapped = abs_y > abs_x;
         const float z       = swapped ? abs_x / abs_y : abs_y / abs_x;
 
-        float angle = z / (1.0f + 0.28f * z * z);   // first-quadrant atan, z in [0, 1]
+        float angle = z / (1.0f + 0.28f * z * z);
 
-        if(swapped)  { angle = HALF_PI - angle; }   // undo the swap
-        if(x < 0.0f) { angle = PI - angle; }        // mirror into quadrants 2 and 3
-        if(y < 0.0f) { angle = -angle; }            // mirror below the x axis
+        if(swapped)  { angle = HALF_PI - angle; }
+        if(x < 0.0f) { angle = PI - angle; }
+        if(y < 0.0f) { angle = -angle; }
 
         return angle;
     }

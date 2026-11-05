@@ -27,7 +27,7 @@ public:
             return std::nullopt;
         }
 
-        data = _buffer[_tail];
+        const T data = _buffer[_tail];
         _tail = (_tail + 1) & BUFFER_MASK;
 
         return data;

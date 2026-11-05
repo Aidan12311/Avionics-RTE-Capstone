@@ -13,7 +13,9 @@ namespace sensor_task {
 
     void run();
 
-    
-}
+    const rte::Latest<DataSample> &output();
+
+    uint32_t run_count();
+} // namespace sensor_task
 
 #endif // AVIONICS_RTE_TASKS_SENSOR_TASK_HPP

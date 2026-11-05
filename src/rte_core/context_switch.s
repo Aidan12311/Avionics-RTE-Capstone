@@ -37,4 +37,3 @@ load_next:
 
     msr     psp, r0
     bx      lr
-    

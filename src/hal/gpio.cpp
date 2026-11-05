@@ -5,6 +5,17 @@
 
 using gpio::Pin;
 
+namespace {
+    constexpr uint32_t RCC_ABH1ENR = 0x40023830u;
+
+    void enable_port_clock(gpio::Port port) {
+        reg(RCC_ABH1ENR) |= (1u << static_cast<uint32_t>(port));
+
+        const uint32_t readback = reg(RCC_ABH1ENR);
+        static_cast<void>(readback);
+    }
+} // anonymous namespace
+
 // ─────────────────────────────────────────────────────────────────────
 // GPIO register offsets from port base address
 // Source: RM0090 Rev 22, Section 8.4
