@@ -1,5 +1,3 @@
-# Avionics-RTE-capstone
-
 # Avionics RTE
 
 A from-scratch real-time executive for an ARM Cortex-M4F that reads a live IMU, estimates the board's attitude, and streams it to a flight simulator, so tilting the board in your hand flies a simulated aircraft.
