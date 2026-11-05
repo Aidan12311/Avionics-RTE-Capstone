@@ -10,7 +10,6 @@ namespace {
     // Source: RM0090 Rev 22, Table 13
     constexpr uint32_t RCC_APB2ENR  = 0x40023844u;
     constexpr uint32_t SPI1_CR1     = 0x40013000u;
-    constexpr uint32_t SPI1_CR2     = 0x40013004u;
     constexpr uint32_t SPI1_SR      = 0x40013008u;
     constexpr uint32_t SPI1_DR      = 0x4001300Cu;
 
@@ -48,8 +47,7 @@ void spi::init() {
     pins::SPI1_MISO.configure_af(5u);
     pins::SPI1_MOSI.configure_af(5u);
 
-    pins::IMU_CS.configure_output();
-    pins::IMU_CS.set_high();
+    pins::IMU_CS.configure_output(true);
 
     reg(SPI1_CR1) = CR1_CPOL
         | CR1_CPHA
@@ -69,5 +67,5 @@ uint8_t spi::transfer(uint8_t data) {
 }
 
 bool spi::is_busy() {
-    return reg(SPI1_SR) & SR_BSY;
+    return (reg(SPI1_SR) & SR_BSY) != 0u;
 }

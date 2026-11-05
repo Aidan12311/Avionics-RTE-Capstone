@@ -7,6 +7,6 @@ namespace telemetry_task {
     constexpr uint32_t PERIOD_MS = 50u;
 
     void run();
-}
+} // namespace telemetry_task
 
 #endif // AVIONICS_RTE_TELEMETRY_TASK_HPP

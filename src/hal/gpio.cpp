@@ -6,12 +6,12 @@
 using gpio::Pin;
 
 namespace {
-    constexpr uint32_t RCC_ABH1ENR = 0x40023830u;
+    constexpr uint32_t RCC_AHB1ENR = 0x40023830u;
 
     void enable_port_clock(gpio::Port port) {
-        reg(RCC_ABH1ENR) |= (1u << static_cast<uint32_t>(port));
+        reg(RCC_AHB1ENR) |= (1u << static_cast<uint32_t>(port));
 
-        const uint32_t readback = reg(RCC_ABH1ENR);
+        const uint32_t readback = reg(RCC_AHB1ENR);
         static_cast<void>(readback);
     }
 } // anonymous namespace
@@ -74,7 +74,7 @@ void Pin::configure_af(uint8_t af) const {
     reg(base_addr + MODER_OFFSET) |=  (MODER_AF << (casted_number * 2u));
 }
 
-void Pin::configure_output() const {
+void Pin::configure_output(bool initial_high=false) const {
     enable_port_clock(_port);
 
     uint32_t base_addr = reinterpret_cast<uint32_t>(base());
@@ -89,8 +89,12 @@ void Pin::configure_output() const {
     reg(base_addr + PUPDR_OFFSET)   &= ~(0x3u << (casted_number * 2u));
     reg(base_addr + PUPDR_OFFSET)   |=  (PUPDR_NONE << (casted_number * 2u));
 
-    reg(base_addr + MODER_OFFSET)   &= ~(0x3u << (casted_number * 2u));
-    reg(base_addr + MODER_OFFSET)   |=  (MODER_OUTPUT << (casted_number * 2u));
+    reg(base_addr + BSRR_OFFSET) = 
+        initial_high ? (1u << casted_number)
+                     : (1u << (casted_number + 16u));
+
+    reg(base_addr + MODER_OFFSET)  &= ~(0x3u << (casted_number * 2u));
+    reg(base_addr + MODER_OFFSET)  |=  (MODER_OUTPUT << (casted_number * 2u));
 }
 
 void Pin::set_high() const {

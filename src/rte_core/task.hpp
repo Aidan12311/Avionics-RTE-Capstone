@@ -76,7 +76,6 @@ namespace rte {
         uint8_t _priority{};
         uint32_t _period_ms{};
         uint32_t _next_run_time_ms{};
-        uint32_t _wcet_us{};
         TaskState _state{};
         uint32_t *_stack_base{};
 

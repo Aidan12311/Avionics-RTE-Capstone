@@ -1,6 +1,7 @@
 #ifndef AVIONICS_RTE_RING_BUFFER_HPP
 #define AVIONICS_RTE_RING_BUFFER_HPP
 
+#include <atomic>
 #include <cstdint>
 #include <optional>
 
@@ -17,6 +18,7 @@ public:
         }
 
         _buffer[_head] = data;
+        std::atomic_signal_fence(std::memory_order_release);
         _head = next;
 
         return true;
@@ -27,7 +29,9 @@ public:
             return std::nullopt;
         }
 
+        std::atomic_signal_fence(std::memory_order_acquire);
         const T data = _buffer[_tail];
+        std::atomic_signal_fence(std::memory_order_release);
         _tail = (_tail + 1) & BUFFER_MASK;
 
         return data;

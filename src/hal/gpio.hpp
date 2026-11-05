@@ -11,8 +11,8 @@ namespace gpio {
         constexpr Pin(Port port, uint8_t number) 
         : _port(port), _number(number) {}
     
-        void configure_output() const;
-
+        void configure_output(bool initial_high=false) const;
+        
         void configure_af(uint8_t af) const;
 
         void set_high() const;
