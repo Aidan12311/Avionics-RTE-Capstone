@@ -16,4 +16,4 @@ namespace estimator_task {
     uint32_t run_count();
 } // namespace estimator_task
 
-#endif
+#endif // AVIONICS_RTE_ESTIMATOR_TASK_HPP

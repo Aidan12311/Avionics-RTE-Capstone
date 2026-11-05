@@ -1,74 +1,124 @@
 #include <cstdint>
+
 #include "src/hal/uart.hpp"
+#include "src/hal/spi.hpp"
+#include "src/hal/gpio.hpp"
+#include "src/hal/pins.hpp"
+#include "src/hal/arm_core.hpp"
+
+#include "src/drivers/icm42688.hpp"
+
 #include "src/rte_core/task.hpp"
 #include "src/rte_core/scheduler.hpp"
 
-__attribute__((always_inline)) inline void set_fpu_regs(uint32_t bits) {
-    __asm__ volatile("vmov s16, %[v]\n vmov s23, %[v]\n vmov s31, %[v]\n"
-                     : : [v] "r" (bits) : "s16", "s23", "s31");
-}
+#include "src/tasks/sensor_task.hpp"
+#include "src/tasks/estimator_task.hpp"
+#include "src/tasks/telemetry_task.hpp"
 
-__attribute__((always_inline)) inline bool fpu_regs_equal(uint32_t bits) {
-    uint32_t a, b, c;
-    __asm__ volatile("vmov %[a], s16\n vmov %[b], s23\n vmov %[c], s31\n"
-                     : [a] "=r" (a), [b] "=r" (b), [c] "=r" (c));
-    return a == bits && b == bits && c == bits;
-}
+namespace {
+    constexpr uint8_t PRIORITY_IDLE       = 0u;
+    
+    constexpr uint8_t PRIORITY_TELEMETRY  = 1u;
+    constexpr uint8_t PRIORITY_CONTROLLER = 2u;
+    constexpr uint8_t PRIORITY_ESTIMATOR  = 3u;
+    constexpr uint8_t PRIORITY_SENSOR     = 4u;
 
-constexpr uint32_t H_PAT = 0x11111111u;
-constexpr uint32_t L_PAT = 0x22222222u;
+    constexpr uint32_t STACK_WORDS = 256u;
+    constexpr uint32_t IDLE_PERIOD_MS = 1u;
+    constexpr uint32_t HEARTBEAT_HALF_PERIOD_MS = 500u;
+} // anonymous namespace
 
-volatile uint32_t h_iters, h_errs, l_checks, l_errs;
+alignas(8) __attribute__((section(".ccm"))) static uint32_t idle_stack[STACK_WORDS];
 
-alignas(8) static uint32_t h_stack[256];
-alignas(8) static uint32_t l_stack[256];
-alignas(8) static uint32_t n_stack[256];
+alignas(8) __attribute__((section(".ccm"))) static uint32_t sensor_stack[STACK_WORDS];
+alignas(8) __attribute__((section(".ccm"))) static uint32_t estimator_stack[STACK_WORDS];
+// alignas(8) __attribute__((section(".ccm"))) static uint32_t controller_stack[STACK_WORDS];
+alignas(8) __attribute__((section(".ccm"))) static uint32_t telemetry_stack[STACK_WORDS];
 
-void h_task() {
+void idle_task_fn() {
+    uint32_t last_toggle_ms = scheduler::now();
+
     while(true) {
-        set_fpu_regs(H_PAT);
-        scheduler::task_block_until_next_period();
-        if(!fpu_regs_equal(H_PAT)) { ++h_errs; }
-        ++h_iters;
-    }
-}
-
-void l_task() {
-    while(true) {
-        set_fpu_regs(L_PAT);
-        volatile float a = 1.25f;
-        float r = a * 4.0f + 0.5f;      // 5.5
-        float s = r * r - 2.25f;        // 28.0
-        if(s != 28.0f)             { ++l_errs; }
-        if(!fpu_regs_equal(L_PAT)) { ++l_errs; }
-        ++l_checks;
-    }
-}
-
-void n_task() {
-    uint32_t n = 0u;
-    while(true) {
-        if(++n % 100u == 0u) {
-            uart::print("H=");     uart::put_u32(h_iters);
-            uart::print(" Herr="); uart::put_u32(h_errs);
-            uart::print(" L=");    uart::put_u32(l_checks);
-            uart::print(" Lerr="); uart::put_u32(l_errs);
-            uart::print(" N=");    uart::put_u32(n);
-            uart::println("");
+        if(scheduler::now() - last_toggle_ms >= HEARTBEAT_HALF_PERIOD_MS) {
+            pins::HEARTBEAT.toggle();
+            last_toggle_ms += HEARTBEAT_HALF_PERIOD_MS;
         }
-        scheduler::task_block_until_next_period();
     }
 }
 
-static rte::Task h { h_task, "H", h_stack, sizeof(h_stack), 3, 3 };
-static rte::Task l { l_task, "L", l_stack, sizeof(l_stack), 2, 1 };
-static rte::Task n { n_task, "N", n_stack, sizeof(n_stack), 4, 7 };
+static rte::Task idle_task {
+    idle_task_fn,
+    "idle",
+    idle_stack,
+    sizeof(idle_stack),
+    PRIORITY_IDLE,
+    IDLE_PERIOD_MS
+};
+
+static rte::Task sensor_rt {
+    sensor_task::run,
+    "sensor",
+    sensor_stack,
+    sizeof(sensor_stack),
+    PRIORITY_SENSOR,
+    sensor_task::PERIOD_MS
+};
+
+static rte::Task estimator_rt {
+    estimator_task::run,
+    "estimator",
+    estimator_stack,
+    sizeof(estimator_stack),
+    PRIORITY_ESTIMATOR,
+    estimator_task::PERIOD_MS
+};
+
+/*
+static rte::Task controller_rt {
+    controller_task::run,
+    "controller",
+    controller_stack,
+    sizeof(controller_stack),
+    PRIORITY_CONTROLLER,
+    controller_task::PERIOD_MS
+};
+*/
+
+static rte::Task telemetry_rt {
+    telemetry_task::run,
+    "telemetry",
+    telemetry_stack,
+    sizeof(telemetry_stack),
+    PRIORITY_TELEMETRY,
+    telemetry_task::PERIOD_MS
+};
 
 int main() {
     uart::init();
-    uart::println("fpu switch test start");
-    scheduler::add_task(&l);
-    scheduler::add_task(&h);
-    scheduler::add_task(&n);
+    spi::init();
+
+    pins::HEARTBEAT.configure_output();
+    pins::LED_RED.configure_output();
+
+    pins::HEARTBEAT.set_low();
+    pins::LED_RED.set_low();
+
+    uart::println("Booting...");
+
+    if(!icm42688::init()) {
+        uart::println("FAILED to initialize ICM-42688 IMU! Check wiring!");
+        pins::LED_RED.set_high();
+
+        while(true);
+    }
+
+    uart::println("IMU OK! Starting scheduler!");
+
+    scheduler::add_task(&idle_task);
+    scheduler::add_task(&sensor_rt);
+    //scheduler::add_task(&controller_rt);
+    scheduler::add_task(&estimator_rt);
+    scheduler::add_task(&telemetry_rt);
+
     scheduler::start();
 }

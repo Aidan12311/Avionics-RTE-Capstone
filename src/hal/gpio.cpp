@@ -57,6 +57,8 @@ volatile uint32_t *Pin::base() const {
 }
 
 void Pin::configure_af(uint8_t af) const {
+    enable_port_clock(_port);
+
     uint32_t base_addr = reinterpret_cast<uint32_t>(base());
     uint32_t casted_number = static_cast<uint32_t>(_number);
 
@@ -73,6 +75,8 @@ void Pin::configure_af(uint8_t af) const {
 }
 
 void Pin::configure_output() const {
+    enable_port_clock(_port);
+
     uint32_t base_addr = reinterpret_cast<uint32_t>(base());
     uint32_t casted_number = static_cast<uint32_t>(_number);
 
