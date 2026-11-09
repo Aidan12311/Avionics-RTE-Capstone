@@ -74,7 +74,7 @@ void Pin::configure_af(uint8_t af) const {
     reg(base_addr + MODER_OFFSET) |=  (MODER_AF << (casted_number * 2u));
 }
 
-void Pin::configure_output(bool initial_high=false) const {
+void Pin::configure_output(bool initial_high) const {
     enable_port_clock(_port);
 
     uint32_t base_addr = reinterpret_cast<uint32_t>(base());
