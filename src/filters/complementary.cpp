@@ -53,19 +53,19 @@ namespace filter {
         float dt
     ) {
         float accel_roll  = to_degrees(fatan2f(ay, az));
-        float accel_pitch = to_degrees(fatan2f(-ax, fsqrtf(ay * ay + az * az)));
+        float accel_pitch = to_degrees(fatan2f(ax, fsqrtf(ay * ay + az * az)));
 
-        if(!_is_initialize) {
+        if(!_is_initialized) {
             _attitude.roll  = accel_roll;
             _attitude.pitch = accel_pitch;
 
-            _is_initialize = true;
+            _is_initialized = true;
 
             return _attitude;
         }
 
         _attitude.roll  = fuse(predict(_attitude.roll, gx, dt), accel_roll, ALPHA);
-        _attitude.pitch = fuse(predict(_attitude.pitch, gy, dt), accel_pitch, ALPHA);
+        _attitude.pitch = fuse(predict(_attitude.pitch, -gy, dt), accel_pitch, ALPHA);
 
         return _attitude;
     }

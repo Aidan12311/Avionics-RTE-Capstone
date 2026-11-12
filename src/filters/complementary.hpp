@@ -23,11 +23,11 @@ namespace filter {
 
         void reset() {
             _attitude = {};
-            _is_initialize = false;
+            _is_initialized = false;
         }
 
     private:
-        bool _is_initialize{};
+        bool _is_initialized{};
         Attitude _attitude{};
 
         // NOTE: Tunable parameter
