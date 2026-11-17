@@ -42,7 +42,7 @@ namespace pid {
                 _integral = std::clamp(
                     _integral + error * dt,
                     -_integral_limit,
-                    _integral_limit
+                    _integralY_limit
                 );
             }
 
