@@ -19,6 +19,8 @@ namespace gpio {
         void set_low() const;
         void toggle() const;
 
+        bool is_high() const;
+
     private:
         Port _port{};
         uint8_t _number{};

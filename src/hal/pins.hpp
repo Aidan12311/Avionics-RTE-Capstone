@@ -14,6 +14,10 @@ namespace pins {
     // Source: DS9405 Table 11 (AF mapping), UM1670 (SB11/SB15 closed)
     constexpr gpio::Pin UART1_TX  { gpio::Port::A, 9u  };
 
+    // USER BUTTON B1: PA0
+    constexpr gpio::Pin USER_BUTTON { gpio::Port::A, 0u };
+    constexpr bool USER_BUTTON_PRESSED_IS_HIGH = true;
+
     // ── SPI1 — IMU ICM-42688 ──────────────────────────────────────────
     // PA5 = SPI1_SCK  AF5
     // PA6 = SPI1_MISO AF5

@@ -118,3 +118,9 @@ void Pin::toggle() const {
     reg(base_addr + ODR_OFFSET) ^= (1u << casted_number);
 }
 
+bool Pin::is_high() const {
+    uint32_t base_addr = reinterpret_cast<uint32_t>(base());
+    uint32_t casted_number = static_cast<uint32_t>(_number);
+
+    return (reg(base_addr + ODR_OFFSET) & (1u << casted_number)) != 0;
+}
