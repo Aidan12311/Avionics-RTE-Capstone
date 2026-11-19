@@ -5,9 +5,9 @@
 
 namespace pid_controller {
     struct Gains {
-        double kp{};
-        double ki{};
-        double kd{};
+        float kp{};
+        float ki{};
+        float kd{};
     };
 
     class PIDController {
@@ -22,7 +22,7 @@ namespace pid_controller {
             float dt
         ) {
             const float error = setpoint - angle;
-            const float output = _gains.kp * error + _gains.ki * _integral - _gains.kd * rate;
+            const float output = _gains.kp * error + _integral - _gains.kd * rate;
 
             const float clamped_output = std::clamp(
                 output,
@@ -40,9 +40,9 @@ namespace pid_controller {
 
             if(within_integral_limit && !(at_limit && pushing_further)) {
                 _integral = std::clamp(
-                    _integral + error * dt,
-                    -_integral_limit,
-                    _integral_limit
+                    _integral + _gains.ki * error * dt,
+                    -_output_limit,
+                    _output_limit
                 );
             }
 
