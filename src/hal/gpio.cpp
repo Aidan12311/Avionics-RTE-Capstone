@@ -36,6 +36,7 @@ namespace {
     constexpr uint32_t PORT_STRIDE = 0x400u;
 
     // MODER field values — 2 bits per pin
+    constexpr uint32_t MODER_INPUT  = 0x0u;
     constexpr uint32_t MODER_OUTPUT = 0x1u;
     constexpr uint32_t MODER_AF     = 0x2u;
 
@@ -56,22 +57,18 @@ volatile uint32_t *Pin::base() const {
     return addr;
 }
 
-void Pin::configure_af(uint8_t af) const {
+void Pin::configure_input() const {
     enable_port_clock(_port);
 
     uint32_t base_addr = reinterpret_cast<uint32_t>(base());
     uint32_t casted_number = static_cast<uint32_t>(_number);
 
-    uint32_t shift = casted_number < 8 
-        ? casted_number * 4u 
-        : (casted_number - 8) * 4u;
-    uint32_t afr_offset = casted_number < 8 ? AFRL_OFFSET : AFRH_OFFSET;
-
-    reg(base_addr + afr_offset) &= ~(0xFu << shift);
-    reg(base_addr + afr_offset) |=  (static_cast<uint32_t>(af) << shift);
-
     reg(base_addr + MODER_OFFSET) &= ~(0x3u << (casted_number * 2u));
-    reg(base_addr + MODER_OFFSET) |=  (MODER_AF << (casted_number * 2u));
+    reg(base_addr + MODER_OFFSET) |=  (MODER_INPUT << (casted_number * 2u));
+
+    reg(base_addr + PUPDR_OFFSET) &= ~(0x3u << (casted_number * 2u));
+    reg(base_addr + PUPDR_OFFSET) |=  (PUPDR_NONE << (casted_number * 2u));
+
 }
 
 void Pin::configure_output(bool initial_high) const {
@@ -95,6 +92,24 @@ void Pin::configure_output(bool initial_high) const {
 
     reg(base_addr + MODER_OFFSET)  &= ~(0x3u << (casted_number * 2u));
     reg(base_addr + MODER_OFFSET)  |=  (MODER_OUTPUT << (casted_number * 2u));
+}
+
+void Pin::configure_af(uint8_t af) const {
+    enable_port_clock(_port);
+
+    uint32_t base_addr = reinterpret_cast<uint32_t>(base());
+    uint32_t casted_number = static_cast<uint32_t>(_number);
+
+    uint32_t shift = casted_number < 8 
+        ? casted_number * 4u 
+        : (casted_number - 8) * 4u;
+    uint32_t afr_offset = casted_number < 8 ? AFRL_OFFSET : AFRH_OFFSET;
+
+    reg(base_addr + afr_offset) &= ~(0xFu << shift);
+    reg(base_addr + afr_offset) |=  (static_cast<uint32_t>(af) << shift);
+
+    reg(base_addr + MODER_OFFSET) &= ~(0x3u << (casted_number * 2u));
+    reg(base_addr + MODER_OFFSET) |=  (MODER_AF << (casted_number * 2u));
 }
 
 void Pin::set_high() const {

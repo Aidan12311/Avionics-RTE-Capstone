@@ -98,6 +98,7 @@ int main() {
 
     pins::HEARTBEAT.configure_output();
     pins::LED_RED.configure_output();
+    pins::USER_BUTTON.configure_input();
 
     pins::HEARTBEAT.set_low();
     pins::LED_RED.set_low();
