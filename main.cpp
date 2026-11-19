@@ -14,6 +14,7 @@
 #include "src/tasks/sensor_task.hpp"
 #include "src/tasks/estimator_task.hpp"
 #include "src/tasks/telemetry_task.hpp"
+#include "src/tasks/flight_controller_task.hpp"
 
 namespace {
     constexpr uint8_t PRIORITY_IDLE       = 0u;
@@ -32,7 +33,7 @@ alignas(8) __attribute__((section(".ccm"))) static uint32_t idle_stack[STACK_WOR
 
 alignas(8) __attribute__((section(".ccm"))) static uint32_t sensor_stack[STACK_WORDS];
 alignas(8) __attribute__((section(".ccm"))) static uint32_t estimator_stack[STACK_WORDS];
-// alignas(8) __attribute__((section(".ccm"))) static uint32_t controller_stack[STACK_WORDS];
+alignas(8) __attribute__((section(".ccm"))) static uint32_t controller_stack[STACK_WORDS];
 alignas(8) __attribute__((section(".ccm"))) static uint32_t telemetry_stack[STACK_WORDS];
 
 void idle_task_fn() {
@@ -73,7 +74,6 @@ static rte::Task estimator_rt {
     estimator_task::PERIOD_MS
 };
 
-/*
 static rte::Task controller_rt {
     controller_task::run,
     "controller",
@@ -82,7 +82,6 @@ static rte::Task controller_rt {
     PRIORITY_CONTROLLER,
     controller_task::PERIOD_MS
 };
-*/
 
 static rte::Task telemetry_rt {
     telemetry_task::run,
@@ -116,7 +115,7 @@ int main() {
 
     scheduler::add_task(&idle_task);
     scheduler::add_task(&sensor_rt);
-    //scheduler::add_task(&controller_rt);
+    scheduler::add_task(&controller_rt);
     scheduler::add_task(&estimator_rt);
     scheduler::add_task(&telemetry_rt);
 

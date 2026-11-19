@@ -20,7 +20,8 @@ SRCS_CXX = main.cpp \
            src/filters/complementary.cpp \
            src/tasks/sensor_task.cpp \
            src/tasks/estimator_task.cpp \
-           src/tasks/telemetry_task.cpp
+           src/tasks/telemetry_task.cpp \
+           src/tasks/flight_controller_task.cpp
 
 SRCS_ASM = src/rte_core/context_switch.s
 

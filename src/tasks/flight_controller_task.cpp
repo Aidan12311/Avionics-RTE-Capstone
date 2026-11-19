@@ -45,7 +45,6 @@ void controller_task::run() {
     pid_controller::PIDController roll_pid(design_gains(ROLL_DYNAMICS), STICK_LIMIT, INTEGRAL_ZONE_DEG);
     pid_controller::PIDController pitch_pid(design_gains(PITCH_DYNAMICS), STICK_LIMIT, INTEGRAL_ZONE_DEG);
 
-    // NOTE: Start off in freefly mode
     FlightMode mode = FlightMode::FreeFly;
     bool was_button_pressed = is_button_pressed();
 
