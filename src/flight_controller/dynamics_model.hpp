@@ -5,11 +5,8 @@
 
 namespace aircraft {
     struct AxisParams {
-        // NOTE: Rate gain
-        float k{};
-
-        // NOTE: Time constant
-        float tau{};
+        float rate_gain{};
+        float time_constant{};
     };
 
     class AxisModel {
@@ -28,9 +25,9 @@ namespace aircraft {
 
         void step(float stick, float dt) {
             const float clamped_stick = std::clamp(stick, -1.0f, 1.0f);
-            const float target_rate = _params.k * clamped_stick + _disturbance;
+            const float target_rate = _params.rate_gain * clamped_stick + _disturbance;
 
-            _rate += dt * (target_rate - _rate) / _params.tau;
+            _rate += dt * (target_rate - _rate) / _params.time_constant;
             _angle += dt * _rate;
         }
 

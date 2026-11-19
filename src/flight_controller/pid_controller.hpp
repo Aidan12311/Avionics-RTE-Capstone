@@ -1,9 +1,9 @@
-#ifndef AVIONICS_RTE_PID_HPP
-#define AVIONICS_RTE_PID_HPP
+#ifndef AVIONICS_RTE_PID_CONTROLLER_HPP
+#define AVIONICS_RTE_PID_CONTROLLER_HPP
 
 #include <algorithm>
 
-namespace pid {
+namespace pid_controller {
     struct Gains {
         double kp{};
         double ki{};
@@ -42,7 +42,7 @@ namespace pid {
                 _integral = std::clamp(
                     _integral + error * dt,
                     -_integral_limit,
-                    _integralY_limit
+                    _integral_limit
                 );
             }
 
@@ -57,6 +57,6 @@ namespace pid {
         float _integral_limit{};
         float _integral{0.0f};
     };
-} // namespace pid
+} // namespace pid_controller
 
-#endif // AVIONICS_RTE_PID_HPP
+#endif // AVIONICS_RTE_PID_CONTROLLER_HPP
