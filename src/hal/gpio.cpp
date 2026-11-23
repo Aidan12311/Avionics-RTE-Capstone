@@ -25,6 +25,7 @@ namespace {
     constexpr uint32_t OTYPER_OFFSET  = 0x04u;  // output type
     constexpr uint32_t OSPEEDR_OFFSET = 0x08u;  // output speed
     constexpr uint32_t PUPDR_OFFSET   = 0x0Cu;  // pull-up/pull-down
+    constexpr uint32_t IDR_OFFSET     = 0x10u;  // input data register
     constexpr uint32_t ODR_OFFSET     = 0x14u;  // output data register
     constexpr uint32_t BSRR_OFFSET    = 0x18u;  // bit set/reset register
     constexpr uint32_t AFRL_OFFSET    = 0x20u;  // AF low  (pins 0–7)
@@ -137,5 +138,5 @@ bool Pin::is_high() const {
     uint32_t base_addr = reinterpret_cast<uint32_t>(base());
     uint32_t casted_number = static_cast<uint32_t>(_number);
 
-    return (reg(base_addr + ODR_OFFSET) & (1u << casted_number)) != 0;
+    return (reg(base_addr + IDR_OFFSET) & (1u << casted_number)) != 0;
 }
