@@ -1,6 +1,6 @@
-# Avionics RTE
+# Avionics RTOS lightweight kernel
 
-A from-scratch real-time executive for an ARM Cortex-M4F that reads a live IMU and streams the board's attitude to a flight simulator, so tilting the board in your hand flies a simulated aircraft. Press the USER button and an on-board PID autopilot levels the aircraft; press again to take control back.
+A from-scratch RTOS microkernel for an ARM Cortex-M4F that reads a live IMU and streams the board's attitude to a flight simulator, so tilting the board in your hand flies a simulated aircraft. Press the USER button and an on-board PID autopilot levels the aircraft; press again to take control back.
 
 Written bare-metal in C++17 and Thumb-2 assembly on an STM32F429I-DISC1, with no vendor HAL, no CMSIS, no heap and no off-the-shelf RTOS.
 
